@@ -1,1 +1,30 @@
 metadata.
+# Analysis settings
+
+## Primary development
+
+MICE imputations: 5
+
+MICE iterations: 20
+
+LASSO alpha: 1
+
+Cross-validation folds: 10
+
+Penalty rule: lambda.1se
+
+Retention rule: selected in 5/5 imputed datasets
+
+## Apparent model
+
+Random seed: 202608290
+
+## Bootstrap validation
+
+Bootstrap resamples: 1000
+
+## Machine-learning validation
+
+Outer validation: 5 folds x 5 repeats
+
+Inner tuning: 5-fold cross-validation
