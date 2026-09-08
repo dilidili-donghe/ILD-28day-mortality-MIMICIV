@@ -1,0 +1,815 @@
+WITH 
+basic AS (
+    WITH
+    --纳入的诊断
+    --其他间质性肺疾病 Other interstitial pulmonary diseases 0
+    includedDiagnose1 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('J84')
+    ),
+    --具有纤维化的其他间质性肺疾病 Other interstitial pulmonary diseases with fibrosis 0
+    includedDiagnose2 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('J841')
+    ),
+    --特发性间质性肺炎 Idiopathic interstitial pneumonia 1
+    includedDiagnose3 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('J8411')
+    ),
+    --其他明确的间质性肺疾病 Other specified interstitial pulmonary diseases 0
+    includedDiagnose4 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('J848')
+    ),
+    --急性间质性肺炎 Acute interstitial pneumonitis 1
+    includedDiagnose5 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('J84114')
+    ),
+    --淋巴性间质性肺炎 Lymphoid interstitial pneumonia 0
+    includedDiagnose6 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('J842')
+    ),
+    --特发性纤维化性肺泡炎 Idiopathic fibrosing alveolitis 1
+    includedDiagnose7 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('5163')
+    ),
+    --特发性肺纤维化 Idiopathic pulmonary fibrosis 1
+    includedDiagnose8 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('51631')
+    ),
+    --急性间质性肺炎 Acute interstitial pneumonitis 1
+    includedDiagnose9 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('51633')
+    ),
+    --呼吸性细支气管炎间质性肺病 Respiratory bronchiolitis interstitial lung disease 0
+    includedDiagnose10 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('51634')
+    ),
+    --剥脱性间质性肺炎 Desquamative interstitial pneumonia 1
+    includedDiagnose11 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('51637')
+    ),
+    --急性药源性间质性肺病 Acute drug-induced interstitial lung disorders 2·1
+    includedDiagnose12 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('J702')
+    ),
+    --慢性药源性间质性肺病 Chronic drug-induced interstitial lung disorders 2·1
+    includedDiagnose13 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('J703')
+    ),
+    --未特指的药源性间质性肺病 Drug-induced interstitial lung disorders, unspecified 2·1
+    includedDiagnose14 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('J704')
+    ),
+    --肺纤维化，未特指 Pulmonary fibrosis, unspecified 0
+    includedDiagnose15 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('J8410')
+    ),
+    --特发性间质性肺炎，未另行明确说明 Idiopathic interstitial pneumonia, not otherwise specified 1
+    includedDiagnose16 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('J84111')
+    ),
+    --特发性肺纤维化 Idiopathic pulmonary fibrosis 1
+    includedDiagnose17 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('J84112')
+    ),
+    --特发性非特指间质性肺炎 Idiopathic non-specific interstitial pneumonitis 1
+    includedDiagnose18 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('J84113')
+    ),
+    --呼吸性细支气管炎间质性肺病 Respiratory bronchiolitis interstitial lung disease 0
+    includedDiagnose19 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('J84115')
+    ),
+    --鳞状细胞间质性肺炎 Desquamative interstitial pneumonia 1
+    includedDiagnose20 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('J84117')
+    ),
+    --在他处分类的疾病中具有纤维化的其他间质性肺疾病 Other interstitial pulmonary diseases with fibrosis in diseases classified elsewhere 0
+    includedDiagnose21 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('J8417')
+    ),
+    --在他处分类的疾病中的具有进展性纤维表型的间质性肺病 Interstitial lung disease with progressive fibrotic phenotype in diseases classified elsewhere 0
+    includedDiagnose22 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('J84170')
+    ),
+    --在他处分类的疾病中具有纤维化的其他间质性肺疾病 Other interstitial pulmonary diseases with fibrosis in diseases classified elsewhere 0
+    includedDiagnose23 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('J84178')
+    ),
+    --其他特指的间质性肺疾病 Other specified interstitial pulmonary diseases 0
+    includedDiagnose24 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('J8489')
+    ),
+    --未特指的间质性肺疾病 Interstitial pulmonary disease, unspecified 0
+    includedDiagnose25 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('J849')
+    ),
+    --特发性间质性肺炎，不具指 Idiopathic interstitial pneumonia, not otherwise specified 1
+    includedDiagnose26 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('51630')
+    ),
+    --特发性非特异性间质性肺炎 Idiopathic non-specific interstitial pneumonitis 1
+    includedDiagnose27 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('51632')
+    ),
+    --特发性淋巴性间质性肺炎 Idiopathic lymphoid interstitial pneumonia 1
+    includedDiagnose28 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('51635')
+    ),
+    --由有机尘引起的过敏性肺炎 Hypersensitivity pneumonitis due to organic dust 2·2
+    includedDiagnose29 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('J67')
+    ),
+    --由其他有机尘引起的过敏性肺炎 Hypersensitivity pneumonitis due to other organic dusts 2·2
+    includedDiagnose30 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('J678')
+    ),
+    --由不明有机尘引起的过敏性肺炎 Hypersensitivity pneumonitis due to unspecified organic dust 2·2
+    includedDiagnose31 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('J679')
+    ),
+    --排除的诊断
+    --先天性支气管扩张 Congenital bronchiectasis 
+    excludedDiagnose1 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('74861')
+    ),
+    --阿米巴性肺脓肿 Amebic lung abscess 
+    excludedDiagnose2 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('A065')
+    ),
+    --支气管和肺的恶性肿瘤 Malignant neoplasm of bronchus and lung 
+    excludedDiagnose3 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('C34')
+    ),
+    --上叶支气管或肺的恶性肿瘤 Malignant neoplasm of upper lobe, bronchus or lung 
+    excludedDiagnose4 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('C341')
+    ),
+    --下叶支气管或肺的恶性肿瘤 Malignant neoplasm of lower lobe, bronchus or lung 
+    excludedDiagnose5 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('C343')
+    ),
+    --支气管和肺的重叠部位的恶性肿瘤 Malignant neoplasm of overlapping sites of bronchus and lung 
+    excludedDiagnose6 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('C348')
+    ),
+    --支气管或肺的未特指部位的恶性肿瘤 Malignant neoplasm of unspecified part of bronchus or lung 
+    excludedDiagnose7 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('C349')
+    ),
+    --上叶未指定支气管或肺的恶性肿瘤 Malignant neoplasm of upper lobe, unspecified bronchus or lung 
+    excludedDiagnose8 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('C3410')
+    ),
+    --肺的次发恶性肿瘤 Secondary malignant neoplasm of lung 
+    excludedDiagnose9 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('C780')
+    ),
+    --支气管和肺的原位癌 Carcinoma in situ of bronchus and lung 
+    excludedDiagnose10 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('D022')
+    ),
+    --左侧支气管和肺的原位癌 Carcinoma in situ of left bronchus and lung 
+    excludedDiagnose11 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('D0222')
+    ),
+    --支气管和肺的良性肿瘤 Benign neoplasm of bronchus and lung 
+    excludedDiagnose12 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('D143')
+    ),
+    --支气管扩张症 Bronchiectasis 
+    excludedDiagnose13 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('J47')
+    ),
+    --先天性支气管扩张症 Congenital bronchiectasis 
+    excludedDiagnose14 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('Q334')
+    ),
+    --气管，支气管和肺的恶性肿瘤的个人病史 Personal history of malignant neoplasm of trachea, bronchus and lung 
+    excludedDiagnose15 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('Z851')
+    ),
+    --肺结核，伴有空洞，痰液中找到结核分枝杆菌（通过显微镜观察） Tuberculosis of lung with cavitation, tubercle bacilli found (in sputum) by microscopy 
+    excludedDiagnose16 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('01123')
+    ),
+    --肺结核，伴有空洞，痰液中未发现结核分枝杆菌（通过显微镜观察），但通过细菌培养发现 Tuberculosis of lung with cavitation, tubercle bacilli not found (in sputum) by microscopy, but found by bacterial culture 
+    excludedDiagnose17 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('01124')
+    ),
+    --肺结核，未特指，痰液中找到结核分枝杆菌（通过显微镜观察） Pulmonary tuberculosis, unspecified, tubercle bacilli found (in sputum) by microscopy 
+    excludedDiagnose18 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('01193')
+    ),
+    --支气管或肺的其他部位的恶性肿瘤 Malignant neoplasm of other parts of bronchus or lung 
+    excludedDiagnose19 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('1628')
+    ),
+    --肺的次要恶性肿瘤 Secondary malignant neoplasm of lung 
+    excludedDiagnose20 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('1970')
+    ),
+    --伴随（急性）恶化的慢性阻塞性哮喘 Chronic obstructive asthma with (acute) exacerbation 
+    excludedDiagnose21 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('49322')
+    ),
+    --无急性恶化的支气管扩张症 Bronchiectasis without acute exacerbation 
+    excludedDiagnose22 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('4940')
+    ),
+    --有急性恶化的支气管扩张症 Bronchiectasis with acute exacerbation 
+    excludedDiagnose23 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('4941')
+    ),
+    --肺脓肿 Abscess of lung 
+    excludedDiagnose24 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('5130')
+    ),
+    --支气管和肺的其他指定部位异物 Foreign body in other specified parts bronchus and lung 
+    excludedDiagnose25 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('9348')
+    ),
+    --右上叶支气管或肺的恶性肿瘤 Malignant neoplasm of upper lobe, right bronchus or lung 
+    excludedDiagnose26 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('C3411')
+    ),
+    --左上叶支气管或肺的恶性肿瘤 Malignant neoplasm of upper lobe, left bronchus or lung 
+    excludedDiagnose27 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('C3412')
+    ),
+    --中叶支气管或肺的恶性肿瘤 Malignant neoplasm of middle lobe, bronchus or lung 
+    excludedDiagnose28 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('C342')
+    ),
+    --下叶未指定支气管或肺的恶性肿瘤 Malignant neoplasm of lower lobe, unspecified bronchus or lung 
+    excludedDiagnose29 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('C3430')
+    ),
+    --右下叶支气管或肺的恶性肿瘤 Malignant neoplasm of lower lobe, right bronchus or lung 
+    excludedDiagnose30 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('C3431')
+    ),
+    --左下叶支气管或肺的恶性肿瘤 Malignant neoplasm of lower lobe, left bronchus or lung 
+    excludedDiagnose31 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('C3432')
+    ),
+    --未确定的支气管和肺的重叠部位的恶性肿瘤 Malignant neoplasm of overlapping sites of unspecified bronchus and lung 
+    excludedDiagnose32 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('C3480')
+    ),
+    --右支气管和肺的重叠部位的恶性肿瘤 Malignant neoplasm of overlapping sites of right bronchus and lung 
+    excludedDiagnose33 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('C3481')
+    ),
+    --左支气管和肺的重叠部位的恶性肿瘤 Malignant neoplasm of overlapping sites of left bronchus and lung 
+    excludedDiagnose34 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('C3482')
+    ),
+    --未特指支气管或肺的未特指部位的恶性肿瘤 Malignant neoplasm of unspecified part of unspecified bronchus or lung 
+    excludedDiagnose35 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('C3490')
+    ),
+    --右支气管或肺的未特指部位的恶性肿瘤 Malignant neoplasm of unspecified part of right bronchus or lung 
+    excludedDiagnose36 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('C3491')
+    ),
+    --左支气管或肺的未特指部位的恶性肿瘤 Malignant neoplasm of unspecified part of left bronchus or lung 
+    excludedDiagnose37 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('C3492')
+    ),
+    --右肺的次发恶性肿瘤 Secondary malignant neoplasm of right lung 
+    excludedDiagnose38 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('C7801')
+    ),
+    --支气管和肺的恶性类癌瘤 Malignant carcinoid tumor of the bronchus and lung 
+    excludedDiagnose39 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('C7A090')
+    ),
+    --未特指的支气管和肺的原位癌 Carcinoma in situ of unspecified bronchus and lung 
+    excludedDiagnose40 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('D0220')
+    ),
+    --右侧支气管和肺的原位癌 Carcinoma in situ of right bronchus and lung 
+    excludedDiagnose41 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('D0221')
+    ),
+    --未指定支气管和肺的良性肿瘤 Benign neoplasm of unspecified bronchus and lung 
+    excludedDiagnose42 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('D1430')
+    ),
+    --右侧支气管和肺的良性肿瘤 Benign neoplasm of right bronchus and lung 
+    excludedDiagnose43 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('D1431')
+    ),
+    --左侧支气管和肺的良性肿瘤 Benign neoplasm of left bronchus and lung 
+    excludedDiagnose44 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('D1432')
+    ),
+    --支气管和肺的良性类癌肿瘤 Benign carcinoid tumor of the bronchus and lung 
+    excludedDiagnose45 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('D3A090')
+    ),
+    --(急性)下呼吸道感染并发的慢性阻塞性肺疾病 Chronic obstructive pulmonary disease with (acute) lower respiratory infection 
+    excludedDiagnose46 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('J440')
+    ),
+    --急性发作的慢性阻塞性肺疾病 Chronic obstructive pulmonary disease with (acute) exacerbation 
+    excludedDiagnose47 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('J441')
+    ),
+    --伴有急性下呼吸道感染的支气管扩张症 Bronchiectasis with acute lower respiratory infection 
+    excludedDiagnose48 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('J470')
+    ),
+    --支气管扩张症伴有(急性)发作 Bronchiectasis with (acute) exacerbation 
+    excludedDiagnose49 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('J471')
+    ),
+    --无并发症的支气管扩张症 Bronchiectasis, uncomplicated 
+    excludedDiagnose50 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('J479')
+    ),
+    --伴有肺炎的肺脓肿 Abscess of lung with pneumonia 
+    excludedDiagnose51 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('J851')
+    ),
+    --无肺炎的肺脓肿 Abscess of lung without pneumonia 
+    excludedDiagnose52 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('J852')
+    ),
+    --支气管和肺的恶性类癌瘤的个人病史 Personal history of malignant carcinoid tumor of bronchus and lung 
+    excludedDiagnose53 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('Z85110')
+    ),
+    --阿米巴肺脓肿 Amebic lung abscess 
+    excludedDiagnose54 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('0064')
+    ),
+    --肺结核，浸润型，细菌学或组织学检查未知（目前为止） Tuberculosis of lung, infiltrative, bacteriological or histological examination unknown (at present) 
+    excludedDiagnose55 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('01102')
+    ),
+    --肺结核，浸润型，痰液中找到结核分枝杆菌（通过显微镜观察） Tuberculosis of lung, infiltrative, tubercle bacilli found (in sputum) by microscopy 
+    excludedDiagnose56 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('01103')
+    ),
+    --肺结核，结节型，痰液中找到结核分枝杆菌（通过显微镜观察） Tuberculosis of lung, nodular, tubercle bacilli found (in sputum) by microscopy 
+    excludedDiagnose57 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('01113')
+    ),
+    --结核性支气管扩张，未特指 Tuberculous bronchiectasis, unspecified 
+    excludedDiagnose58 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('01150')
+    ),
+    --结核性支气管扩张，未进行细菌学或组织学检查 Tuberculous bronchiectasis, bacteriological or histological examination not done 
+    excludedDiagnose59 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('01151')
+    ),
+    --结核性支气管扩张，细菌学或组织学检查未知（目前为止） Tuberculous bronchiectasis, bacteriological or histological examination unknown (at present) 
+    excludedDiagnose60 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('01152')
+    ),
+    --结核性支气管扩张，痰液中找到结核分枝杆菌（通过显微镜观察） Tuberculous bronchiectasis, tubercle bacilli found (in sputum) by microscopy 
+    excludedDiagnose61 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('01153')
+    ),
+    --结核性支气管扩张，痰液中未发现结核分枝杆菌（通过显微镜观察），但通过细菌培养发现 Tuberculous bronchiectasis, tubercle bacilli not found (in sputum) by microscopy, but found by bacterial culture 
+    excludedDiagnose62 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('01154')
+    ),
+    --结核性支气管扩张，细菌学检查未发现结核分枝杆菌，但组织学上确诊为结核病 Tuberculous bronchiectasis, tubercle bacilli not found by bacteriological examination, but tuberculosis confirmed histologically 
+    excludedDiagnose63 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('01155')
+    ),
+    --结核性支气管扩张，未通过细菌学或组织学检查发现结核分枝杆菌，但通过其他方法 Tuberculous bronchiectasis, tubercle bacilli not found by bacteriological or histological examination, but tuberculosis confirmed by other methods [inoculation of animals] 
+    excludedDiagnose64 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('01156')
+    ),
+    --其他特指肺结核，痰液中找到结核分枝杆菌（通过显微镜观察） Other specified pulmonary tuberculosis, tubercle bacilli found (in sputum) by microscopy 
+    excludedDiagnose65 AS (
+        SELECT DISTINCT hadm_id 
+        FROM mimiciv_hosp.diagnoses_icd
+        WHERE icd_code IN ('01183')
+    )
+    SELECT 
+        DISTINCT ON (icu.subject_id)
+        icu.subject_id, 
+        icu.stay_id, 
+        icu.hadm_id
+    FROM mimiciv_derived.icustay_detail AS icu
+    JOIN mimiciv_derived.age AS age ON age.hadm_id = icu.hadm_id
+    WHERE 
+        TRUE
+        AND age.age BETWEEN 18 AND 120
+        AND icu.first_icu_stay = true
+        --纳入诊断疾病
+        AND (
+            --其他间质性肺疾病 Other interstitial pulmonary diseases 0
+            icu.hadm_id IN (SELECT hadm_id FROM includedDiagnose1)
+            --具有纤维化的其他间质性肺疾病 Other interstitial pulmonary diseases with fibrosis 0
+            OR icu.hadm_id IN (SELECT hadm_id FROM includedDiagnose2)
+            --特发性间质性肺炎 Idiopathic interstitial pneumonia 1
+            OR icu.hadm_id IN (SELECT hadm_id FROM includedDiagnose3)
+            --其他明确的间质性肺疾病 Other specified interstitial pulmonary diseases 0
+            OR icu.hadm_id IN (SELECT hadm_id FROM includedDiagnose4)
+            --急性间质性肺炎 Acute interstitial pneumonitis 1
+            OR icu.hadm_id IN (SELECT hadm_id FROM includedDiagnose5)
+            --淋巴性间质性肺炎 Lymphoid interstitial pneumonia 0
+            OR icu.hadm_id IN (SELECT hadm_id FROM includedDiagnose6)
+            --特发性纤维化性肺泡炎 Idiopathic fibrosing alveolitis 1
+            OR icu.hadm_id IN (SELECT hadm_id FROM includedDiagnose7)
+            --特发性肺纤维化 Idiopathic pulmonary fibrosis 1
+            OR icu.hadm_id IN (SELECT hadm_id FROM includedDiagnose8)
+            --急性间质性肺炎 Acute interstitial pneumonitis 1
+            OR icu.hadm_id IN (SELECT hadm_id FROM includedDiagnose9)
+            --呼吸性细支气管炎间质性肺病 Respiratory bronchiolitis interstitial lung disease 0
+            OR icu.hadm_id IN (SELECT hadm_id FROM includedDiagnose10)
+            --剥脱性间质性肺炎 Desquamative interstitial pneumonia 1
+            OR icu.hadm_id IN (SELECT hadm_id FROM includedDiagnose11)
+            --急性药源性间质性肺病 Acute drug-induced interstitial lung disorders 2·1
+            OR icu.hadm_id IN (SELECT hadm_id FROM includedDiagnose12)
+            --慢性药源性间质性肺病 Chronic drug-induced interstitial lung disorders 2·1
+            OR icu.hadm_id IN (SELECT hadm_id FROM includedDiagnose13)
+            --未特指的药源性间质性肺病 Drug-induced interstitial lung disorders, unspecified 2·1
+            OR icu.hadm_id IN (SELECT hadm_id FROM includedDiagnose14)
+            --肺纤维化，未特指 Pulmonary fibrosis, unspecified 0
+            OR icu.hadm_id IN (SELECT hadm_id FROM includedDiagnose15)
+            --特发性间质性肺炎，未另行明确说明 Idiopathic interstitial pneumonia, not otherwise specified 1
+            OR icu.hadm_id IN (SELECT hadm_id FROM includedDiagnose16)
+            --特发性肺纤维化 Idiopathic pulmonary fibrosis 1
+            OR icu.hadm_id IN (SELECT hadm_id FROM includedDiagnose17)
+            --特发性非特指间质性肺炎 Idiopathic non-specific interstitial pneumonitis 1
+            OR icu.hadm_id IN (SELECT hadm_id FROM includedDiagnose18)
+            --呼吸性细支气管炎间质性肺病 Respiratory bronchiolitis interstitial lung disease 0
+            OR icu.hadm_id IN (SELECT hadm_id FROM includedDiagnose19)
+            --鳞状细胞间质性肺炎 Desquamative interstitial pneumonia 1
+            OR icu.hadm_id IN (SELECT hadm_id FROM includedDiagnose20)
+            --在他处分类的疾病中具有纤维化的其他间质性肺疾病 Other interstitial pulmonary diseases with fibrosis in diseases classified elsewhere 0
+            OR icu.hadm_id IN (SELECT hadm_id FROM includedDiagnose21)
+            --在他处分类的疾病中的具有进展性纤维表型的间质性肺病 Interstitial lung disease with progressive fibrotic phenotype in diseases classified elsewhere 0
+            OR icu.hadm_id IN (SELECT hadm_id FROM includedDiagnose22)
+            --在他处分类的疾病中具有纤维化的其他间质性肺疾病 Other interstitial pulmonary diseases with fibrosis in diseases classified elsewhere 0
+            OR icu.hadm_id IN (SELECT hadm_id FROM includedDiagnose23)
+            --其他特指的间质性肺疾病 Other specified interstitial pulmonary diseases 0
+            OR icu.hadm_id IN (SELECT hadm_id FROM includedDiagnose24)
+            --未特指的间质性肺疾病 Interstitial pulmonary disease, unspecified 0
+            OR icu.hadm_id IN (SELECT hadm_id FROM includedDiagnose25)
+            --特发性间质性肺炎，不具指 Idiopathic interstitial pneumonia, not otherwise specified 1
+            OR icu.hadm_id IN (SELECT hadm_id FROM includedDiagnose26)
+            --特发性非特异性间质性肺炎 Idiopathic non-specific interstitial pneumonitis 1
+            OR icu.hadm_id IN (SELECT hadm_id FROM includedDiagnose27)
+            --特发性淋巴性间质性肺炎 Idiopathic lymphoid interstitial pneumonia 1
+            OR icu.hadm_id IN (SELECT hadm_id FROM includedDiagnose28)
+            --由有机尘引起的过敏性肺炎 Hypersensitivity pneumonitis due to organic dust 2·2
+            OR icu.hadm_id IN (SELECT hadm_id FROM includedDiagnose29)
+            --由其他有机尘引起的过敏性肺炎 Hypersensitivity pneumonitis due to other organic dusts 2·2
+            OR icu.hadm_id IN (SELECT hadm_id FROM includedDiagnose30)
+            --由不明有机尘引起的过敏性肺炎 Hypersensitivity pneumonitis due to unspecified organic dust 2·2
+            OR icu.hadm_id IN (SELECT hadm_id FROM includedDiagnose31)
+        )
+        --排除诊断疾病
+        AND (
+            --先天性支气管扩张 Congenital bronchiectasis 
+            icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose1)
+            --阿米巴性肺脓肿 Amebic lung abscess 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose2)
+            --支气管和肺的恶性肿瘤 Malignant neoplasm of bronchus and lung 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose3)
+            --上叶支气管或肺的恶性肿瘤 Malignant neoplasm of upper lobe, bronchus or lung 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose4)
+            --下叶支气管或肺的恶性肿瘤 Malignant neoplasm of lower lobe, bronchus or lung 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose5)
+            --支气管和肺的重叠部位的恶性肿瘤 Malignant neoplasm of overlapping sites of bronchus and lung 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose6)
+            --支气管或肺的未特指部位的恶性肿瘤 Malignant neoplasm of unspecified part of bronchus or lung 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose7)
+            --上叶未指定支气管或肺的恶性肿瘤 Malignant neoplasm of upper lobe, unspecified bronchus or lung 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose8)
+            --肺的次发恶性肿瘤 Secondary malignant neoplasm of lung 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose9)
+            --支气管和肺的原位癌 Carcinoma in situ of bronchus and lung 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose10)
+            --左侧支气管和肺的原位癌 Carcinoma in situ of left bronchus and lung 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose11)
+            --支气管和肺的良性肿瘤 Benign neoplasm of bronchus and lung 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose12)
+            --支气管扩张症 Bronchiectasis 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose13)
+            --先天性支气管扩张症 Congenital bronchiectasis 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose14)
+            --气管，支气管和肺的恶性肿瘤的个人病史 Personal history of malignant neoplasm of trachea, bronchus and lung 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose15)
+            --肺结核，伴有空洞，痰液中找到结核分枝杆菌（通过显微镜观察） Tuberculosis of lung with cavitation, tubercle bacilli found (in sputum) by microscopy 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose16)
+            --肺结核，伴有空洞，痰液中未发现结核分枝杆菌（通过显微镜观察），但通过细菌培养发现 Tuberculosis of lung with cavitation, tubercle bacilli not found (in sputum) by microscopy, but found by bacterial culture 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose17)
+            --肺结核，未特指，痰液中找到结核分枝杆菌（通过显微镜观察） Pulmonary tuberculosis, unspecified, tubercle bacilli found (in sputum) by microscopy 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose18)
+            --支气管或肺的其他部位的恶性肿瘤 Malignant neoplasm of other parts of bronchus or lung 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose19)
+            --肺的次要恶性肿瘤 Secondary malignant neoplasm of lung 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose20)
+            --伴随（急性）恶化的慢性阻塞性哮喘 Chronic obstructive asthma with (acute) exacerbation 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose21)
+            --无急性恶化的支气管扩张症 Bronchiectasis without acute exacerbation 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose22)
+            --有急性恶化的支气管扩张症 Bronchiectasis with acute exacerbation 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose23)
+            --肺脓肿 Abscess of lung 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose24)
+            --支气管和肺的其他指定部位异物 Foreign body in other specified parts bronchus and lung 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose25)
+            --右上叶支气管或肺的恶性肿瘤 Malignant neoplasm of upper lobe, right bronchus or lung 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose26)
+            --左上叶支气管或肺的恶性肿瘤 Malignant neoplasm of upper lobe, left bronchus or lung 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose27)
+            --中叶支气管或肺的恶性肿瘤 Malignant neoplasm of middle lobe, bronchus or lung 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose28)
+            --下叶未指定支气管或肺的恶性肿瘤 Malignant neoplasm of lower lobe, unspecified bronchus or lung 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose29)
+            --右下叶支气管或肺的恶性肿瘤 Malignant neoplasm of lower lobe, right bronchus or lung 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose30)
+            --左下叶支气管或肺的恶性肿瘤 Malignant neoplasm of lower lobe, left bronchus or lung 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose31)
+            --未确定的支气管和肺的重叠部位的恶性肿瘤 Malignant neoplasm of overlapping sites of unspecified bronchus and lung 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose32)
+            --右支气管和肺的重叠部位的恶性肿瘤 Malignant neoplasm of overlapping sites of right bronchus and lung 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose33)
+            --左支气管和肺的重叠部位的恶性肿瘤 Malignant neoplasm of overlapping sites of left bronchus and lung 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose34)
+            --未特指支气管或肺的未特指部位的恶性肿瘤 Malignant neoplasm of unspecified part of unspecified bronchus or lung 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose35)
+            --右支气管或肺的未特指部位的恶性肿瘤 Malignant neoplasm of unspecified part of right bronchus or lung 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose36)
+            --左支气管或肺的未特指部位的恶性肿瘤 Malignant neoplasm of unspecified part of left bronchus or lung 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose37)
+            --右肺的次发恶性肿瘤 Secondary malignant neoplasm of right lung 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose38)
+            --支气管和肺的恶性类癌瘤 Malignant carcinoid tumor of the bronchus and lung 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose39)
+            --未特指的支气管和肺的原位癌 Carcinoma in situ of unspecified bronchus and lung 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose40)
+            --右侧支气管和肺的原位癌 Carcinoma in situ of right bronchus and lung 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose41)
+            --未指定支气管和肺的良性肿瘤 Benign neoplasm of unspecified bronchus and lung 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose42)
+            --右侧支气管和肺的良性肿瘤 Benign neoplasm of right bronchus and lung 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose43)
+            --左侧支气管和肺的良性肿瘤 Benign neoplasm of left bronchus and lung 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose44)
+            --支气管和肺的良性类癌肿瘤 Benign carcinoid tumor of the bronchus and lung 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose45)
+            --(急性)下呼吸道感染并发的慢性阻塞性肺疾病 Chronic obstructive pulmonary disease with (acute) lower respiratory infection 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose46)
+            --急性发作的慢性阻塞性肺疾病 Chronic obstructive pulmonary disease with (acute) exacerbation 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose47)
+            --伴有急性下呼吸道感染的支气管扩张症 Bronchiectasis with acute lower respiratory infection 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose48)
+            --支气管扩张症伴有(急性)发作 Bronchiectasis with (acute) exacerbation 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose49)
+            --无并发症的支气管扩张症 Bronchiectasis, uncomplicated 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose50)
+            --伴有肺炎的肺脓肿 Abscess of lung with pneumonia 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose51)
+            --无肺炎的肺脓肿 Abscess of lung without pneumonia 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose52)
+            --支气管和肺的恶性类癌瘤的个人病史 Personal history of malignant carcinoid tumor of bronchus and lung 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose53)
+            --阿米巴肺脓肿 Amebic lung abscess 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose54)
+            --肺结核，浸润型，细菌学或组织学检查未知（目前为止） Tuberculosis of lung, infiltrative, bacteriological or histological examination unknown (at present) 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose55)
+            --肺结核，浸润型，痰液中找到结核分枝杆菌（通过显微镜观察） Tuberculosis of lung, infiltrative, tubercle bacilli found (in sputum) by microscopy 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose56)
+            --肺结核，结节型，痰液中找到结核分枝杆菌（通过显微镜观察） Tuberculosis of lung, nodular, tubercle bacilli found (in sputum) by microscopy 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose57)
+            --结核性支气管扩张，未特指 Tuberculous bronchiectasis, unspecified 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose58)
+            --结核性支气管扩张，未进行细菌学或组织学检查 Tuberculous bronchiectasis, bacteriological or histological examination not done 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose59)
+            --结核性支气管扩张，细菌学或组织学检查未知（目前为止） Tuberculous bronchiectasis, bacteriological or histological examination unknown (at present) 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose60)
+            --结核性支气管扩张，痰液中找到结核分枝杆菌（通过显微镜观察） Tuberculous bronchiectasis, tubercle bacilli found (in sputum) by microscopy 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose61)
+            --结核性支气管扩张，痰液中未发现结核分枝杆菌（通过显微镜观察），但通过细菌培养发现 Tuberculous bronchiectasis, tubercle bacilli not found (in sputum) by microscopy, but found by bacterial culture 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose62)
+            --结核性支气管扩张，细菌学检查未发现结核分枝杆菌，但组织学上确诊为结核病 Tuberculous bronchiectasis, tubercle bacilli not found by bacteriological examination, but tuberculosis confirmed histologically 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose63)
+            --结核性支气管扩张，未通过细菌学或组织学检查发现结核分枝杆菌，但通过其他方法 Tuberculous bronchiectasis, tubercle bacilli not found by bacteriological or histological examination, but tuberculosis confirmed by other methods [inoculation of animals] 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose64)
+            --其他特指肺结核，痰液中找到结核分枝杆菌（通过显微镜观察） Other specified pulmonary tuberculosis, tubercle bacilli found (in sputum) by microscopy 
+            AND icu.hadm_id NOT IN (SELECT hadm_id FROM excludedDiagnose65)
+        )
+)
+--SELECT * FROM basic;
+
+ -- 是不是做过机械通气，做机械通气小时数，首次做机械通气时间
+, VENTILATION AS
+    (SELECT SUBJECT.STAY_ID,
+            ROUND(SUM(MIMICIV_DERIVED.DATETIME_DIFF(VENTILATION.ENDTIME,VENTILATION.STARTTIME,'HOUR')),2) AS VENTILATION_HOUR,
+            MIN(VENTILATION.STARTTIME) AS VENTILATION_FIRST_TIME
+        FROM basic AS SUBJECT,
+            MIMICIV_DERIVED.VENTILATION AS VENTILATION,
+        MIMICIV_DERIVED.ICUSTAY_DETAIL AS ICU
+        WHERE SUBJECT.STAY_ID = VENTILATION.STAY_ID
+                 AND SUBJECT.STAY_ID = ICU.STAY_ID
+         AND VENTILATION.STARTTIME >= ICU.ICU_INTIME
+        AND VENTILATION.VENTILATION_STATUS IN ('NonInvasiveVent','SupplementalOxygen','None','HFNC')
+        GROUP BY SUBJECT.STAY_ID)
+SELECT SUBJECT.SUBJECT_ID,
+    SUBJECT.STAY_ID,
+    SUBJECT.HADM_ID,
+    VENTILATION.VENTILATION_HOUR,
+    CASE WHEN VENTILATION.VENTILATION_HOUR IS NOT NULL THEN 1 ELSE NULL END AS VENTILATION,
+    VENTILATION.VENTILATION_FIRST_TIME
+FROM basic AS SUBJECT
+LEFT JOIN VENTILATION ON SUBJECT.STAY_ID = VENTILATION.STAY_ID
+ORDER BY SUBJECT.SUBJECT_ID;
