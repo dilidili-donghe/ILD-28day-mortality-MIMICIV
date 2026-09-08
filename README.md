@@ -87,9 +87,9 @@ All algorithms started from the same 44 candidate predictors and used matched ou
 
 ## Data extraction
 
-Data extraction was performed using the DecisionLinnc 1.0 Software.
+Data extraction was performed using the DecisionLinnc 1.0 Software (https://www.statsape.com).
 
-The investigators specified cohort eligibility criteria, variables, and temporal windows through the graphical interface. The platform executes SQL-based queries in the background.
+The investigators specified cohort eligibility criteria, variables, and temporal windows through the graphical interface. The platform executes SQL-based queries in the background.Some SQL statements have been included in the cohort_definition.
 
 
 ## Reproducibility
